@@ -1,4 +1,5 @@
 import re
+import sys
 from napalm import get_network_driver
 from getpass import getpass
 
@@ -83,14 +84,25 @@ def cut_special_cases(cfg):
 
 
 def main():
-    driver = get_network_driver('ios')
-    ipaddress = input('IP address: ')
-    username = input('Username: ')
-    ios_conn = driver(ipaddress, username, getpass())
-    ios_conn.open()
-    cfgs = ios_conn.get_config()
-    dct = build_dict(cfgs['running'])
+    """    Reads config from file passed as argument. Or connect
+    to Cisco ios device asking interactively ip, user, password
+    Then prints result with indentation
+    """
+    if len(sys.argv) >= 1:
+        file_name = sys.argv[1]
+        fp = open(file_name)
+        content = fp.read()
+        dct = build_dict(content)
+    else:
+        driver = get_network_driver('ios')
+        ipaddress = input('IP address: ')
+        username = input('Username: ')
+        ios_conn = driver(ipaddress, username, getpass())
+        ios_conn.open()
+        cfgs = ios_conn.get_config()
+        dct = build_dict(cfgs['running'])
     pretty_print(dct,1)
+
 
 if __name__ == "__main__":
     main()
